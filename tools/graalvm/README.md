@@ -8,9 +8,11 @@ The easiest way to use GraalVM is to execute the provided helper script `graalvm
 ./graalvm.sh js
 ```
 
-The above command will start an interactive JS shell, but of course any other GraalVM binary can be executed the same way, simply replace `js` with whatever other binary you want to execute.
+The above command will start an interactive JS shell, but of course any other GraalVM binary can be executed the same
+way, simply replace `js` with whatever other binary you want to execute.
 
-The necessary Docker Image (see below) will automatically be built and started in order to execute the GraalVM command.
+The necessary Docker Image (see below) will automatically be pulled or build (should pulling fail) and started in order
+to execute the GraalVM command.
 
 ### Requirements
 
@@ -22,13 +24,14 @@ The necessary Docker Image (see below) will automatically be built and started i
 The provided Dockerfile can be used to build an Ubuntu-based GraalVM Docker Image.
 
 ```
-docker build -t moka-tools-graalvm .
+docker build -t baristi/graalvm .
 ```
 
 Once built, GraalVM binaries can be executed like this:
 
 ```
-docker run --rm -ti moka-tools-graalvm js
+docker run --rm -ti baristi/graalvm js
 ```
 
-The above command will start an interactive JS shell, but of course any other GraalVM binary can be executed the same way, simply replace `js` with whatever other binary you want to execute.
+The above command will start an interactive JS shell, but of course any other GraalVM binary can be executed the same
+way, simply replace `js` with whatever other binary you want to execute.
