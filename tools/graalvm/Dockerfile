@@ -16,7 +16,7 @@ RUN cd /opt && \
 # use Ubuntu as base image
 FROM ubuntu
 # copy GraalVM over from the build stage
-COPY --from=build /opt/graalvm-ce /opt
+COPY --from=build /opt/graalvm-ce /opt/graalvm-ce
 
 # copy the entrypoint script
 COPY entrypoint.sh /usr/local/bin
