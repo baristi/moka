@@ -1,0 +1,22 @@
+{
+  "name": "moka",
+  "version": "1.0.0",
+  "description": "A web application framework, aiming at high-productivity through simplicity.",
+  "main": "moka.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/baristi/moka.git"
+  },
+  "author": "Arbeitsgemeinschaft Baristi",
+  "license": "LGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/baristi/moka/issues"
+  },
+  "homepage": "https://github.com/baristi/moka#readme",
+  "dependencies": {
+    "express": "^4.16.3"
+  }
+}

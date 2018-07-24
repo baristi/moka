@@ -6,7 +6,7 @@ YELLOW="\033[1;33m"
 NC="\033[0m"
 
 # check if no command was given
-if [ -z "$@" ]
+if [ -z "$*" ]
 then
   # print usage
   echo "Usage: $0 <command>"
@@ -36,7 +36,7 @@ then
 fi
 
 # run the Docker Image, forwarding the given command
-if ! docker run --rm -ti baristi/graalvm $@
+if ! docker run --rm -ti -v "$(pwd)/../../":/context -p 8080:8080 baristi/graalvm $*
 then
   # print error message
   echo -en $RED
