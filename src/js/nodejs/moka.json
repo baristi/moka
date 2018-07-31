@@ -2,6 +2,7 @@
   "APP_DIRECTORY": "/context/app",
   "BUILD_DIRECTORY": "/context/build/js",
   "DEFAULT_METHOD_NAME": "main",
-  "LOG_LEVEL": "DEBUG",
-  "DEFAULT_WEB_PORT": 8080
+  "WEB_PORT": 8080,
+  "LOG_LEVEL": "debug",
+  "WORKERS": 1
 }

@@ -2,20 +2,53 @@
 const moka = require("./moka.js")
 // load the make config
 const config = require("./moka.json");
-// load the log module
-const Log = require("log");
+// load the chalk module
+const chalk = require("chalk");
+
 // build a logger
-const log = new Log(config.LOG_LEVEL);
+const log =  require("log-driver")({
+  level: config.LOG_LEVEL,
+  format: function(level, message) {
+    // define the log level and the text color
+    let levelColor, textColor;
+    // switch the log level
+    switch (level) {
+      case "error": levelColor = "red";    textColor = "red";    break;
+      case "warn":  levelColor = "orange"; textColor = "orange"; break;
+      case "info":  levelColor = "blue";   textColor = "black";  break;
+      case "debug": levelColor = "black";  textColor = "gray";   break;
+      case "trace": levelColor = "black";  textColor = "gray";   break;
+      // "log-driver" doesn't have any other log levels than the ones above, but you never know
+      default:      levelColor = "blue";   textColor = "black";
+    }
+
+    // format and return the log message
+    return `${chalk.gray(new Date().toLocaleString("lookup", {
+      hourCycle: "h24"
+    }))} ${chalk[levelColor](level.toUpperCase())} ${chalk[textColor](message)}`;
+  }
+});
+
+// when an uncaughtException event is emitted
+process.on("uncaughtException", error => {
+  // format and write the error to the console
+  console.log(`${chalk.gray(new Date().toLocaleString("lookup", {
+    hourCycle: "h24"
+  }))} ${chalk.red("ERROR")} ${chalk.red(error)}`);
+});
 
 // load the cluster module
 const cluster = require("cluster");
 // check if we are the main process
 if (cluster.isMaster) {
-  // get the number of CPUs
-  const numberOfCPUs = require("os").cpus().length;
+  // get the number of workers
+  const numberOfWorkers = config.WORKERS ? config.WORKERS : require("os").cpus().length + 1;
 
-  // create a worker process for each CPU
-  for (let i = 0; i < numberOfCPUs; i++) {
+  // debug
+  log.info(`Preparing ${numberOfWorkers} mokas ...`);
+
+  // create workers
+  for (let i = 0; i < numberOfWorkers; i++) {
     // create a worker process
     cluster.fork();
   }
@@ -23,16 +56,10 @@ if (cluster.isMaster) {
   // when a worker dies
   cluster.on("exit", function (worker) {
     // debug
-    log.error(`Moka #${worker.id} died.`);
+    log.error(`Moka #${worker.worker.id} died.`);
     // create a new worker process
     cluster.fork();
   });
-
-  // start moka
-  moka.createAppDirectoryIfNecessary();
-
-  // debug
-  log.info(`Preparing ${numberOfCPUs} mokas ...`);
 } else {
   // start moka
   moka
@@ -65,11 +92,11 @@ if (cluster.isMaster) {
     });
 
     // debug
-    log.debug(`Request ${request.path} handled in %s`, duration.format());
+    log.debug(`Request ${request.path} handled in ${duration.format()}`);
   });
 
   // listen on Moka's default web port
-  app.listen(config.DEFAULT_WEB_PORT, function() {
+  app.listen(config.WEB_PORT, function() {
     // debug
     log.info(`Moka #${cluster.worker.id} up and brewing.`);
   });
