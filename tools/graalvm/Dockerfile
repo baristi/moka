@@ -2,15 +2,15 @@
 FROM ubuntu as build
 
 # define the GraalVM version to download
-ENV GRAALVM_VERSION=1.0.0-rc3
+ENV GRAALVM_VERSION=1.0.0-rc4
 
 # update the pckages database and install wget
 RUN apt-get update && \
-    apt-get install -y wget
+    apt-get install -y wget bsdtar
 # go to the opt directory, download the latest GraalVM and extract it
 RUN cd /opt && \
     wget https://github.com/oracle/graal/releases/download/vm-$GRAALVM_VERSION/graalvm-ce-$GRAALVM_VERSION-linux-amd64.tar.gz && \
-    tar xzf graalvm-ce-$GRAALVM_VERSION-linux-amd64.tar.gz && \
+    bsdtar xzf graalvm-ce-$GRAALVM_VERSION-linux-amd64.tar.gz && \
     mv graalvm-ce-$GRAALVM_VERSION graalvm-ce
 
 # use Ubuntu as base image
