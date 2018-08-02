@@ -164,7 +164,7 @@ const moka = {
     // build the compiled classe's file name
     const fileName = `${config.BUILD_DIRECTORY}/${className}.js`;
     // write the compiled class file to the filesystem
-    fs.writeFileSync(fileName, `const MokaObject = require("${config.APP_DIRECTORY}/../src/js/nodejs/classes/MokaObject.js"); module.exports = class ${className} extends MokaObject {constructor(data = {}) {super(data);} ${methods}}`);
+    fs.writeFileSync(fileName, `const MokaObject = require("${config.APP_DIRECTORY}/../src/js/nodejs/classes/MokaObject.js") ; const ${className} = class ${className} extends MokaObject {constructor(data = {}) {super(data)} ${methods}} ; store.defineMapper("${className}", ${className}.getMapperConfig()) ; module.exports = ${className}`);
 
     // evict the class file from Node's require cache
     evictClassFromRequireCache(className);
