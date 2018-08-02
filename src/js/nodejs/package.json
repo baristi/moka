@@ -25,7 +25,7 @@
     "watch": "^1.0.2"
   },
   "_moduleAliases": {
-      "@app": "../../../app",
-      "@classes": "../../../build/js"
+    "@app": "../../../app",
+    "@classes": "../../../build/js"
   }
 }
