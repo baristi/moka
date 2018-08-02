@@ -4,5 +4,7 @@
   "DEFAULT_METHOD_NAME": "main",
   "WEB_PORT": 8080,
   "LOG_LEVEL": "debug",
-  "WORKERS": 1
+  "WORKERS": 1,
+  "APP_DB_CONFIG": "db.json",
+  "APP_CONFIG": "app.json"
 }

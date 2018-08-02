@@ -14,10 +14,18 @@
   },
   "homepage": "https://github.com/baristi/moka#readme",
   "dependencies": {
+    "chalk": "^2.4.1",
     "durations": "^3.4.1",
     "express": "^4.16.3",
-    "log": "^1.4.0",
+    "js-data": "^3.0.2",
+    "js-data-sql": "^1.0.1",
+    "log-driver": "^1.2.7",
+    "module-alias": "^2.1.0",
     "npm": "^6.2.0",
     "watch": "^1.0.2"
+  },
+  "_moduleAliases": {
+      "@app": "../../../app",
+      "@classes": "../../../build/js"
   }
 }

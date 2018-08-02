@@ -1,3 +1,6 @@
+// enable the module alias module
+require("module-alias/register");
+
 // load the moka module
 const moka = require("./moka.js")
 // load the make config
@@ -77,22 +80,32 @@ if (cluster.isMaster) {
 
   // register a request handler
   app.get(/\/[^/]*/, function(request, response) {
-    // time the duration of executing the request
-    const duration = durations.time(function() {
-      // load the Root class
-      const Root = require(`${config.BUILD_DIRECTORY}/Root.js`);
+    // create and start a new stopwatch
+    const stopwatch = durations.stopwatch().start();
 
-      // get the query path
-      const queryPath = request.path.substring(1);
-      // define the method to be called
-      const methodName = queryPath ? queryPath : config.DEFAULT_METHOD_NAME;
+    // load the Root class
+    const Root = require(`@classes/Root.js`);
 
+    // get the query path
+    const queryPath = request.path.substring(1);
+    // define the method to be called
+    const methodName = queryPath ? queryPath : config.DEFAULT_METHOD_NAME;
+
+    try {
       // build a Root instance and call the method on it
-      new Root()[methodName](request, response);
-    });
-
-    // debug
-    log.debug(`Request ${request.path} handled in ${duration.format()}`);
+      (new Root()[methodName])(request, response).then(function() {
+        // debug
+        log.info(`Request ${request.path} handled in ${stopwatch.stop().duration().format()}`);
+      }).catch(error => {
+        // debug
+        log.error(`Request ${request.path} failed after ${stopwatch.stop().duration().format()}`);
+        response.status(500).set("Content-Type", "text/plain").send(error.stack ? error.stack : error);
+      });
+    } catch (error) {
+      // debug
+      log.error(`Request ${request.path} failed after ${stopwatch.stop().duration().format()}`);
+      response.status(500).set("Content-Type", "text/plain").send(error.stack ? error.stack : error);
+    }
   });
 
   // listen on Moka's default web port

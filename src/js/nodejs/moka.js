@@ -5,6 +5,47 @@ const path = require("path");
 // load the make config
 const config = require("./moka.json");
 
+/**
+ * Returns the currently defined classes.
+ *
+ * @return {String[]}
+ *  The names of the currently defined classes.
+ */
+function getClasses() {
+  // return the currently defined classes
+  return fs.readdirSync(config.APP_DIRECTORY).filter(file => {
+    // check if the current file is a directory
+    return fs.statSync(path.join(config.APP_DIRECTORY, file)).isDirectory();
+  });
+}
+
+/**
+ * Evicts the compiled class files from Node's require cache.
+ *
+ * @return {Undefined}
+ *  No return value.
+ */
+function evictClassesFromRequireCache() {
+  // loop all classes
+  getClasses().forEach(className => {
+    // evict the current classe's file from Node's require cache
+    evictClassFromRequireCache(className);
+  });
+}
+
+/**
+ * Evicts a class file from Node's require cache.
+ *
+ * @param {String} className
+ *  The name of the class which's class file to remove from Node's require cache.
+ * @return {Undefined}
+ *  No return value.
+ */
+function evictClassFromRequireCache(className) {
+  // evict the class file from Node's require cache
+  delete require.cache[`${config.BUILD_DIRECTORY}/${className}.js`];
+}
+
 // define the moka object
 const moka = {
 
@@ -42,9 +83,27 @@ const moka = {
      * @return {Undefined}
      *  No return value.
      */
-    function changeHandler(path) {
-      // compile the file's class
-      moka.compileClass(path.substring(config.APP_DIRECTORY.length + 1).split("/")[0]);
+    function changeHandler(file) {
+      // parse the file's path
+      const info = path.parse(path.relative(config.APP_DIRECTORY, file));
+
+      // check if the file is a JSON file
+      if (info.ext == ".json") {
+        // evict the JSON file from Node's require cache
+        delete require.cache[file];
+      }
+
+      // check if the file is the app's database configuration file
+      if (!info.dir && info.base == config.APP_DB_CONFIG) {
+        // re-create the data store
+        moka.createDataStore();
+      }
+
+      // check if the file is inside a class directory
+      if (info.dir) {
+        // compile the file's class
+        moka.compileClass(info.dir.split("/")[0]);
+      }
     }
 
     // build a file watcher, re-compiling the app on whatever change in the app directory
@@ -70,19 +129,10 @@ const moka = {
    *  This, for method chaining.
    */
   compileApp: function() {
-    // read all app's sub-directories
-    fs.readdir(config.APP_DIRECTORY, function(error, directories) {
-      // loop all app's sub-directories
-      directories.forEach(directory => {
-        // stat the current directory (might not be a directory, could also be a file)
-        fs.stat(path.join(config.APP_DIRECTORY, directory), function(error, stats) {
-          // check if the current directory actually is a directory
-          if (!error && stats.isDirectory()) {
-            // compile the current directory
-            moka.compileClass(directory);
-          }
-        });
-      });
+    // loop all classes
+    getClasses().forEach(className => {
+      // compile the current directory
+      moka.compileClass(className);
     });
 
     // return this for method chaining
@@ -97,36 +147,65 @@ const moka = {
    *  This, for method chaining.
    */
   compileClass: function(className) {
+    // the methods
+    var methods = "";
+
     // read all directory's files
-    fs.readdir(path.join(config.APP_DIRECTORY, className), function(error, files) {
-      // check if reading the directry failed
-      if (error) {
-        // ignore
-        return;
-      }
+    fs.readdirSync(path.join(config.APP_DIRECTORY, className)).forEach(file => {
+      // build the method name
+      const methodName = path.basename(file, path.extname(file));
+      // load the method's code
+      const code = fs.readFileSync(path.join(config.APP_DIRECTORY, className, file));
 
-      // the methods
-      var methods = "";
-
-      // loop all directory's files
-      files.forEach(file => {
-        // build the method name
-        const methodName = path.basename(file, path.extname(file));
-        // load the method's code
-        const code = fs.readFileSync(path.join(config.APP_DIRECTORY, className, file));
-
-        // add the current method to the methods
-        methods += `${methodName}(request, response) {${code}} `;
-      });
-
-      // build the compiled classe's file name
-      const fileName = `${config.BUILD_DIRECTORY}/${className}.js`;
-      // write the compiled class file to the filesystem
-      fs.writeFileSync(fileName, `module.exports = class ${className} {${methods}}`);
-
-      // evict the class file from Node's require cache
-      delete require.cache[`${fileName}`];
+      // add the current method to the methods
+      methods += `${methodName}(request, response) {async function wrapper(resolve, reject) {try {${code}} catch(error) {reject(error)} ; resolve()} ; return new Promise(wrapper) } `;
     });
+
+    // build the compiled classe's file name
+    const fileName = `${config.BUILD_DIRECTORY}/${className}.js`;
+    // write the compiled class file to the filesystem
+    fs.writeFileSync(fileName, `const MokaObject = require("${config.APP_DIRECTORY}/../src/js/nodejs/classes/MokaObject.js"); module.exports = class ${className} extends MokaObject {constructor(data = {}) {super(data);} ${methods}}`);
+
+    // evict the class file from Node's require cache
+    evictClassFromRequireCache(className);
+
+    // FIXME re-creating the whole data store doesn't seem to be efficient
+    // re-create the data store
+    this.createDataStore();
+
+    // return this for method chaining
+    return this;
+  },
+
+  /**
+   * Creates or re-creates Moka's data store.
+   *
+   * @return {moka}
+   *  This, for method chaining.
+   */
+  createDataStore: function() {
+    // load the SQL adapter module
+    const SqlAdapter = require("js-data-sql").SqlAdapter;
+    // re-create the SQL adapter using the app's db settings
+    const sqlAdapter = new SqlAdapter({
+      knexOpts: require("@app/db.json")
+    });
+
+    // load the data store module
+    const DataStore = require("js-data").DataStore;
+    // create the data store
+    const store = new DataStore();
+
+    // register the SQL adapater with the data store
+    store.registerAdapter("sql", sqlAdapter, {
+      default: true
+    });
+
+    // make the data store globally available
+    global.store = store;
+
+    // evict classes from Node's rquire cache
+    evictClassesFromRequireCache();
 
     // return this for method chaining
     return this;
