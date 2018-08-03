@@ -29,5 +29,8 @@
     "@src": ".",
     "@app": "../../../app",
     "@classes": "../../../build/js"
-  }
+  },
+  "_moduleDirectories": [
+    "../../../app/node_modules"
+  ]
 }
