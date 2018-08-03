@@ -65,8 +65,15 @@ if (cluster.isMaster) {
   // start moka
   Moka
       .createAppDirectoryIfNecessary()
-      .compileApp()
-      .watchAppDirectory();
+      .compileApp();
+
+  // check if we are running in a JVM enabled GraalVM
+  if (typeof Graal != 'undefined' && typeof Java != 'undefined') {
+    // watch app directory
+    Moka.watchAppDirectory();
+  } else {
+    log.warn("Not running in a JVM enabled GraalVM, watching and re-compiling app files is not supported.");
+  }
 
   // load the express module
   const express = require("express");
