@@ -47,7 +47,15 @@ function evictClassFromRequireCache(className) {
 // define the moka class
 class Moka {
 
+  /**
+   * Returns the combined configuration.
+   * The combined configuration is the default configuration extended with the app's configuration.
+   *
+   * @return {Object}
+   *  The combined configuration.
+   */
   static get config() {
+    // return the combined configuration
     return Object.assign(
       {},
       require("@src/moka.json"),
