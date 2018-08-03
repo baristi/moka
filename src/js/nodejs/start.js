@@ -15,7 +15,7 @@ const log =  require("log-driver")({
     // switch the log level
     switch (level) {
       case "error": levelColor = "red";    textColor = "red";    break;
-      case "warn":  levelColor = "orange"; textColor = "orange"; break;
+      case "warn":  levelColor = "yellow"; textColor = "yellow"; break;
       case "info":  levelColor = "blue";   textColor = "black";  break;
       case "debug": levelColor = "black";  textColor = "gray";   break;
       case "trace": levelColor = "black";  textColor = "gray";   break;
