@@ -1,16 +1,14 @@
 // enable the module alias module
 require("module-alias/register");
 
-// load the moka module
-const moka = require("./moka.js")
-// load the make config
-const config = require("./moka.json");
+// load the moka class
+const Moka = require("@src/classes/Moka.js")
 // load the chalk module
 const chalk = require("chalk");
 
 // build a logger
 const log =  require("log-driver")({
-  level: config.LOG_LEVEL,
+  level: Moka.config.LOG_LEVEL,
   format: function(level, message) {
     // define the log level and the text color
     let levelColor, textColor;
@@ -45,7 +43,7 @@ const cluster = require("cluster");
 // check if we are the main process
 if (cluster.isMaster) {
   // get the number of workers
-  const numberOfWorkers = config.WORKERS ? config.WORKERS : require("os").cpus().length + 1;
+  const numberOfWorkers = Moka.config.WORKERS ? Moka.config.WORKERS : require("os").cpus().length + 1;
 
   // debug
   log.info(`Preparing ${numberOfWorkers} mokas ...`);
@@ -65,7 +63,7 @@ if (cluster.isMaster) {
   });
 } else {
   // start moka
-  moka
+  Moka
       .createAppDirectoryIfNecessary()
       .compileApp()
       .watchAppDirectory();
@@ -89,7 +87,7 @@ if (cluster.isMaster) {
     // get the query path
     const queryPath = request.path.substring(1);
     // define the method to be called
-    const methodName = queryPath ? queryPath : config.DEFAULT_METHOD_NAME;
+    const methodName = queryPath ? queryPath : Moka.config.DEFAULT_METHOD_NAME;
 
     try {
       // build a Root instance and call the method on it
@@ -109,7 +107,7 @@ if (cluster.isMaster) {
   });
 
   // listen on Moka's default web port
-  app.listen(config.WEB_PORT, function() {
+  app.listen(Moka.config.WEB_PORT, function() {
     // debug
     log.info(`Moka #${cluster.worker.id} up and brewing.`);
   });

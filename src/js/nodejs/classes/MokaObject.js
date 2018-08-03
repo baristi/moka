@@ -1,5 +1,5 @@
-// load the make config
-const config = require("@src/moka.json");
+// load the Moka class
+const Moka = require("@src/classes/Moka.js");
 // load js-data's Record class
 const Record = require("js-data").Record;
 
@@ -60,8 +60,8 @@ module.exports = class MokaObject extends Record {
       const fs = require("fs");
 
       // load the classe's data mapping file
-      const values = properties.parse(fs.readFileSync(require.resolve(`@app/${this.name}/${config.MAAPING_CONFIG}`), {
-        encoding: config.DEFAULT_FILE_ENCODING
+      const values = properties.parse(fs.readFileSync(require.resolve(`@app/${this.name}/${Moka.config.MAPPING_CONFIG}`), {
+        encoding: Moka.config.DEFAULT_FILE_ENCODING
       }));
 
       // loop all defined properties

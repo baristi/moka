@@ -2,8 +2,6 @@
 const fs = require("fs");
 // load the path module
 const path = require("path");
-// load the make config
-const config = require("./moka.json");
 
 /**
  * Returns the currently defined classes.
@@ -13,9 +11,9 @@ const config = require("./moka.json");
  */
 function getClasses() {
   // return the currently defined classes
-  return fs.readdirSync(config.APP_DIRECTORY).filter(file => {
+  return fs.readdirSync(Moka.config.APP_DIRECTORY).filter(file => {
     // check if the current file is a directory
-    return fs.statSync(path.join(config.APP_DIRECTORY, file)).isDirectory();
+    return fs.statSync(path.join(Moka.config.APP_DIRECTORY, file)).isDirectory();
   });
 }
 
@@ -43,37 +41,45 @@ function evictClassesFromRequireCache() {
  */
 function evictClassFromRequireCache(className) {
   // evict the class file from Node's require cache
-  delete require.cache[`${config.BUILD_DIRECTORY}/${className}.js`];
+  delete require.cache[`${Moka.config.BUILD_DIRECTORY}/${className}.js`];
 }
 
-// define the moka object
-const moka = {
+// define the moka class
+class Moka {
+
+  static get config() {
+    return Object.assign(
+      {},
+      require("@src/moka.json"),
+      require.resolve("@app/app.json") ? require("@app/app.json") : {}
+    );
+  }
 
   /**
    * Creates the app directory, if it doesn't exist yet.
    *
-   * @return {moka}
+   * @return {Moka}
    *  This, for method chaining.
    */
-  createAppDirectoryIfNecessary: function() {
+  static createAppDirectoryIfNecessary() {
     // check if the app directory doesn't exist yet
-    if (!fs.existsSync(config.APP_DIRECTORY)) {
+    if (!fs.existsSync(Moka.config.APP_DIRECTORY)) {
       // create the app directory
-      fs.mkdirSync(config.APP_DIRECTORY);
+      fs.mkdirSync(Moka.config.APP_DIRECTORY);
     }
 
     // return this for method chaining
-    return this;
-  },
+    return Moka;
+  }
 
   /**
    * Start watching the app directory.
    * The whole app is re-compiled on whatever change in the app directory.
    *
-   * @return {moka}
+   * @return {Moka}
    *  This, for method chaining.
    */
-  watchAppDirectory: function() {
+  static watchAppDirectory() {
     // load the file watcher class
     const FileWatcher = Java.type("org.baristi.moka.utils.FileWatcher");
 
@@ -85,7 +91,7 @@ const moka = {
      */
     function changeHandler(file) {
       // parse the file's path
-      const info = path.parse(path.relative(config.APP_DIRECTORY, file));
+      const info = path.parse(path.relative(Moka.config.APP_DIRECTORY, file));
 
       // check if the file is a JSON file
       if (info.ext == ".json") {
@@ -94,20 +100,20 @@ const moka = {
       }
 
       // check if the file is the app's database configuration file
-      if (!info.dir && info.base == config.APP_DB_CONFIG) {
+      if (!info.dir && info.base == Moka.config.APP_DB_CONFIG) {
         // re-create the data store
-        moka.createDataStore();
+        Moka.createDataStore();
       }
 
       // check if the file is inside a class directory
       if (info.dir) {
         // compile the file's class
-        moka.compileClass(info.dir.split("/")[0]);
+        Moka.compileClass(info.dir.split("/")[0]);
       }
     }
 
     // build a file watcher, re-compiling the app on whatever change in the app directory
-    const watcher = new FileWatcher(config.APP_DIRECTORY, changeHandler, changeHandler, changeHandler);
+    const watcher = new FileWatcher(Moka.config.APP_DIRECTORY, changeHandler, changeHandler, changeHandler);
 
     // check if starting the file watcher succeeds
     if (watcher.start()) {
@@ -118,72 +124,72 @@ const moka = {
     }
 
     // return this for method chaining
-    return this;
-  },
+    return Moka;
+  }
 
   /**
    * Compiles the app.
    * Compiling the app compiles all classes.
    *
-   * @return {moka}
+   * @return {Moka}
    *  This, for method chaining.
    */
-  compileApp: function() {
+  static compileApp() {
     // loop all classes
     getClasses().forEach(className => {
       // compile the current directory
-      moka.compileClass(className);
+      Moka.compileClass(className);
     });
 
     // return this for method chaining
-    return this;
-  },
+    return Moka;
+  }
 
   /**
    * Compiles the given class.
    * Compiling means joining all methods in the classe's directory into one single class (file).
    *
-   * @return {moka}
+   * @return {Moka}
    *  This, for method chaining.
    */
-  compileClass: function(className) {
+  static compileClass(className) {
     // the methods
     var methods = "";
 
     // read all directory's files
-    fs.readdirSync(path.join(config.APP_DIRECTORY, className)).forEach(file => {
+    fs.readdirSync(path.join(Moka.config.APP_DIRECTORY, className)).forEach(file => {
       // build the method name
       const methodName = path.basename(file, path.extname(file));
       // load the method's code
-      const code = fs.readFileSync(path.join(config.APP_DIRECTORY, className, file));
+      const code = fs.readFileSync(path.join(Moka.config.APP_DIRECTORY, className, file));
 
       // add the current method to the methods
       methods += `${methodName}(request, response) {async function wrapper(resolve, reject) {try {${code}} catch(error) {reject(error)} ; resolve()} ; return new Promise(wrapper) } `;
     });
 
     // build the compiled classe's file name
-    const fileName = `${config.BUILD_DIRECTORY}/${className}.js`;
+    const fileName = `${Moka.config.BUILD_DIRECTORY}/${className}.js`;
     // write the compiled class file to the filesystem
-    fs.writeFileSync(fileName, `const MokaObject = require("${config.APP_DIRECTORY}/../src/js/nodejs/classes/MokaObject.js") ; const ${className} = class ${className} extends MokaObject {constructor(data = {}) {super(data)} ${methods}} ; store.defineMapper("${className}", ${className}.getMapperConfig()) ; module.exports = ${className}`);
+    fs.writeFileSync(fileName, `const MokaObject = require("@src/classes/MokaObject.js") ; const ${className} = class ${className} extends MokaObject {constructor(data = {}) {super(data)} ${methods}} ; store.defineMapper("${className}", ${className}.getMapperConfig()) ; module.exports = ${className}`);
 
     // evict the class file from Node's require cache
     evictClassFromRequireCache(className);
 
     // FIXME re-creating the whole data store doesn't seem to be efficient
     // re-create the data store
-    this.createDataStore();
+    Moka.createDataStore();
 
     // return this for method chaining
-    return this;
-  },
+    return Moka;
+  }
 
   /**
    * Creates or re-creates Moka's data store.
    *
-   * @return {moka}
+   * @return {Moka}
    *  This, for method chaining.
    */
-  createDataStore: function() {
+  static createDataStore() {
     // load the SQL adapter module
     const SqlAdapter = require("js-data-sql").SqlAdapter;
     // re-create the SQL adapter using the app's db settings
@@ -208,9 +214,9 @@ const moka = {
     evictClassesFromRequireCache();
 
     // return this for method chaining
-    return this;
+    return Moka;
   }
-};
+}
 
-// export the moka object
-module.exports = moka;
+// export the moka class
+module.exports = Moka;
