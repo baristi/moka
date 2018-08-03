@@ -35,7 +35,7 @@ process.on("uncaughtException", error => {
   // format and write the error to the console
   console.log(`${chalk.gray(new Date().toLocaleString("lookup", {
     hourCycle: "h24"
-  }))} ${chalk.red("ERROR")} ${chalk.red(error)}`);
+  }))} ${chalk.red("ERROR")} ${chalk.red(error.stack ? error.stack : error)}`);
 });
 
 // load the cluster module
