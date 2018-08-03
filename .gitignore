@@ -3,4 +3,3 @@ src/js/nodejs/node_modules/
 src/js/nodejs/package-lock.json
 lib/java/target/
 dumps/
-app/node_modules
