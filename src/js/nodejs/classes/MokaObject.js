@@ -94,7 +94,7 @@ module.exports = class MokaObject extends Record {
       const fs = require("fs");
 
       // load the classe's data mapping file
-      const values = properties.parse(fs.readFileSync(require.resolve(`@app/${this.name}/${Moka.config.MAPPING_CONFIG}`), {
+      const values = properties.parse(fs.readFileSync(require.resolve(`@app/src/${this.name}/${Moka.config.MAPPING_CONFIG}`), {
         encoding: Moka.config.DEFAULT_FILE_ENCODING
       }));
 

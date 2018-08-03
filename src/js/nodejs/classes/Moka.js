@@ -11,9 +11,9 @@ const path = require("path");
  */
 function getClasses() {
   // return the currently defined classes
-  return fs.readdirSync(Moka.config.APP_DIRECTORY).filter(file => {
+  return fs.readdirSync(`${Moka.config.APP_DIRECTORY}/src`).filter(file => {
     // check if the current file is a directory
-    return fs.statSync(path.join(Moka.config.APP_DIRECTORY, file)).isDirectory();
+    return fs.statSync(`${Moka.config.APP_DIRECTORY}/src/${file}`).isDirectory();
   });
 }
 
@@ -68,6 +68,12 @@ class Moka {
       fs.mkdirSync(Moka.config.APP_DIRECTORY);
     }
 
+    // check if the app's source directory doesn't exist yet
+    if (!fs.existsSync(`${Moka.config.APP_DIRECTORY}/src`)) {
+      // create the app's source directory
+      fs.mkdirSync(`${Moka.config.APP_DIRECTORY}/src`);
+    }
+
     // return this for method chaining
     return Moka;
   }
@@ -106,9 +112,9 @@ class Moka {
       }
 
       // check if the file is inside a class directory
-      if (info.dir) {
+      if (info.dir.startsWith("src/") && info.dir.split("/").length > 1) {
         // compile the file's class
-        Moka.compileClass(info.dir.split("/")[0]);
+        Moka.compileClass(info.dir.substring("src/".length).split("/")[0]);
       }
     }
 
@@ -157,11 +163,11 @@ class Moka {
     var methods = "";
 
     // read all directory's files
-    fs.readdirSync(path.join(Moka.config.APP_DIRECTORY, className)).forEach(file => {
+    fs.readdirSync(`${Moka.config.APP_DIRECTORY}/src/${className}`).forEach(file => {
       // build the method name
       const methodName = path.basename(file, path.extname(file));
       // load the method's code
-      const code = fs.readFileSync(path.join(Moka.config.APP_DIRECTORY, className, file));
+      const code = fs.readFileSync(`${Moka.config.APP_DIRECTORY}/src/${className}/${file}`);
 
       // add the current method to the methods
       methods += `${methodName}(request, response) {async function wrapper(resolve, reject) {try {${code}} catch(error) {reject(error)} ; resolve()} ; return new Promise(wrapper) } `;
