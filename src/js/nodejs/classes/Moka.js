@@ -179,6 +179,10 @@ class Moka {
     // re-create the data store
     Moka.createDataStore();
 
+    // TODO re-activate the below once the store doesn't need to be re-created (completely and from scratch) anymore
+    // re-require the class and make it globally available
+    // global[className] = require(`@classes/${className}.js`);
+
     // return this for method chaining
     return Moka;
   }
@@ -210,8 +214,13 @@ class Moka {
     // make the data store globally available
     global.store = store;
 
-    // evict classes from Node's rquire cache
-    evictClassesFromRequireCache();
+    // loop all classes
+    getClasses().forEach(className => {
+      // evict the current classe's file from Node's require cache
+      evictClassFromRequireCache(className);
+      // re-require the current class and make it globally available
+      global[className] = require(`@classes/${className}.js`);
+    });
 
     // return this for method chaining
     return Moka;

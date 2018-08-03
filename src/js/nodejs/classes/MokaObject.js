@@ -12,6 +12,40 @@ module.exports = class MokaObject extends Record {
   constructor(data = {}) {
     // call the parent constructor
     super(data);
+
+    // closure caching
+    const instance = this;
+
+    /**
+     * Define a lazy loading property for accessing the given relation.
+     *
+     * @param {Object} relation
+     *  A relation from the mapper config relations.
+     * @return {Undefined}
+     *  No return value.
+     */
+    function defineLazyLoader(relation) {
+      // define the lazy loading property
+      Object.defineProperty(instance, relation.localField.substring(1), {
+        get: function() {
+          // return a promise
+          return new Promise(resolve => {
+            // once the relation is loaded
+            this.loadRelations([relation.localField]).then(() => {
+              // resolve the promise with what was loaded for the relation
+              resolve(this[relation.localField])
+            })
+          });
+        }
+      });
+    }
+
+    // get the mapper config
+    const mapperConfig = this.constructor.getMapperConfig();
+    // loop all has many relations and define lazy loader properties
+    Object.values(mapperConfig.relations.hasMany).forEach(defineLazyLoader);
+    // loop all has many relations and define lazy loader properties
+    Object.values(mapperConfig.relations.belongsTo).forEach(defineLazyLoader);
   }
 
   /**
@@ -75,14 +109,14 @@ module.exports = class MokaObject extends Record {
             // define an 1:n relation
             mapper.relations.hasMany[className] = {
               foreignKey: `${this.name.toLowerCase()}_id`,
-              localField: key
+              localField: `_${key}`
             };
           break;
           case "object":
             // define an n:1 relation
             mapper.relations.belongsTo[className] = {
               foreignKey: `${className.toLowerCase()}_id`,
-              localField: key
+              localField: `_${key}`
             }
           break;
         }
