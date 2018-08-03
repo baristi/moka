@@ -6,5 +6,7 @@
   "LOG_LEVEL": "debug",
   "WORKERS": 1,
   "APP_DB_CONFIG": "db.json",
-  "APP_CONFIG": "app.json"
+  "APP_CONFIG": "app.json",
+  "MAPPING_CONFIG": "mapping.properties",
+  "DEFAULT_FILE_ENCODING": "utf-8"
 }

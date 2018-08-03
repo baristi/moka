@@ -26,6 +26,7 @@
     "watch": "^1.0.2"
   },
   "_moduleAliases": {
+    "@src": ".",
     "@app": "../../../app",
     "@classes": "../../../build/js"
   }
