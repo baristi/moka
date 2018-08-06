@@ -145,14 +145,16 @@ class Moka {
    * Compiles the app.
    * Compiling the app compiles all classes.
    *
+   * @param {boolean} recreateDataStore
+   *  If to re-create the data store (defults to false).
    * @return {Moka}
    *  This, for method chaining.
    */
-  static compileApp() {
+  static compileApp(recreateDataStore = false) {
     // loop all classes
     getClasses().forEach(className => {
       // compile the current directory
-      Moka.compileClass(className);
+      Moka.compileClass(className, recreateDataStore);
     });
 
     // return this for method chaining
@@ -163,10 +165,14 @@ class Moka {
    * Compiles the given class.
    * Compiling means joining all methods in the classe's directory into one single class (file).
    *
+   * @param {String} className
+   *  The name of the class to compile.
+   * @param {boolean} recreateDataStore
+   *  If to re-create the data store (defults to true).
    * @return {Moka}
    *  This, for method chaining.
    */
-  static compileClass(className) {
+  static compileClass(className, recreateDataStore = true) {
     // the methods
     var methods = "";
 
@@ -189,9 +195,12 @@ class Moka {
     // evict the class file from Node's require cache
     evictClassFromRequireCache(className);
 
-    // FIXME re-creating the whole data store doesn't seem to be efficient
-    // re-create the data store
-    Moka.createDataStore();
+    // check if to re-create the data store
+    if (recreateDataStore) {
+      // FIXME re-creating the whole data store doesn't seem to be efficient
+      // re-create the data store
+      Moka.createDataStore();
+    }
 
     // TODO re-activate the below once the store doesn't need to be re-created (completely and from scratch) anymore
     // re-require the class and make it globally available

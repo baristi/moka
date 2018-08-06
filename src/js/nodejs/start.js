@@ -65,7 +65,8 @@ if (cluster.isMaster) {
   // start moka
   Moka
       .createAppDirectoryIfNecessary()
-      .compileApp();
+      .compileApp()
+      .createDataStore();
 
   // check if we are running in a JVM enabled GraalVM
   if (typeof Graal != 'undefined' && typeof Java != 'undefined') {
