@@ -3,6 +3,13 @@ const fs = require("fs");
 // load the path module
 const path = require("path");
 
+// define the source directory
+const SOURCE_DIRECTORY = `${require.resolve.paths("@app")[0]}/src`;
+// define the app directory
+const APP_DIRECTORY = require.resolve.paths("@app")[0];
+// define the build isDirectory
+const BUILD_DIRECTORY = require.resolve.paths("@classes")[0];
+
 /**
  * Returns the currently defined classes.
  *
@@ -11,9 +18,9 @@ const path = require("path");
  */
 function getClasses() {
   // return the currently defined classes
-  return fs.readdirSync(`${Moka.config.APP_DIRECTORY}/src`).filter(file => {
+  return fs.readdirSync(SOURCE_DIRECTORY).filter(file => {
     // check if the current file is a directory
-    return fs.statSync(`${Moka.config.APP_DIRECTORY}/src/${file}`).isDirectory();
+    return fs.statSync(`${SOURCE_DIRECTORY}/${file}`).isDirectory();
   });
 }
 
@@ -41,7 +48,7 @@ function evictClassesFromRequireCache() {
  */
 function evictClassFromRequireCache(className) {
   // evict the class file from Node's require cache
-  delete require.cache[`${Moka.config.BUILD_DIRECTORY}/${className}.js`];
+  delete require.cache[`${BUILD_DIRECTORY}/${className}.js`];
 }
 
 // define the moka class
@@ -71,15 +78,15 @@ class Moka {
    */
   static createAppDirectoryIfNecessary() {
     // check if the app directory doesn't exist yet
-    if (!fs.existsSync(Moka.config.APP_DIRECTORY)) {
+    if (!fs.existsSync(APP_DIRECTORY)) {
       // create the app directory
-      fs.mkdirSync(Moka.config.APP_DIRECTORY);
+      fs.mkdirSync(APP_DIRECTORY);
     }
 
     // check if the app's source directory doesn't exist yet
-    if (!fs.existsSync(`${Moka.config.APP_DIRECTORY}/src`)) {
+    if (!fs.existsSync(`${SOURCE_DIRECTORY}`)) {
       // create the app's source directory
-      fs.mkdirSync(`${Moka.config.APP_DIRECTORY}/src`);
+      fs.mkdirSync(`${SOURCE_DIRECTORY}`);
     }
 
     // return this for method chaining
@@ -105,7 +112,7 @@ class Moka {
      */
     function changeHandler(file) {
       // parse the file's path
-      const info = path.parse(path.relative(Moka.config.APP_DIRECTORY, file));
+      const info = path.parse(path.relative(APP_DIRECTORY, file));
 
       // check if the file is a JSON file
       if (info.ext == ".json") {
@@ -127,7 +134,7 @@ class Moka {
     }
 
     // build a file watcher, re-compiling the app on whatever change in the app directory
-    const watcher = new FileWatcher(Moka.config.APP_DIRECTORY, changeHandler, changeHandler, changeHandler);
+    const watcher = new FileWatcher(APP_DIRECTORY, changeHandler, changeHandler, changeHandler);
 
     // check if starting the file watcher succeeds
     if (watcher.start()) {
@@ -177,18 +184,18 @@ class Moka {
     var methods = "";
 
     // read all directory's files
-    fs.readdirSync(`${Moka.config.APP_DIRECTORY}/src/${className}`).forEach(file => {
+    fs.readdirSync(`${SOURCE_DIRECTORY}/${className}`).forEach(file => {
       // build the method name
       const methodName = path.basename(file, path.extname(file));
       // load the method's code
-      const code = fs.readFileSync(`${Moka.config.APP_DIRECTORY}/src/${className}/${file}`);
+      const code = fs.readFileSync(`${SOURCE_DIRECTORY}/${className}/${file}`);
 
       // add the current method to the methods
       methods += `${methodName}(request, response) {async function wrapper(resolve, reject) {try {${code}} catch(error) {reject(error)} ; resolve()} ; return new Promise(wrapper) } `;
     });
 
     // build the compiled classe's file name
-    const fileName = `${Moka.config.BUILD_DIRECTORY}/${className}.js`;
+    const fileName = `${BUILD_DIRECTORY}/${className}.js`;
     // write the compiled class file to the filesystem
     fs.writeFileSync(fileName, `const MokaObject = require("@src/classes/MokaObject.js") ; const ${className} = class ${className} extends MokaObject {constructor(data = {}) {super(data)} ${methods}} ; store.defineMapper("${className}", ${className}.getMapperConfig()) ; module.exports = ${className}`);
 

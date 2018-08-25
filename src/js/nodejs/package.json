@@ -24,13 +24,5 @@
     "npm": "^6.2.0",
     "properties": "^1.2.1",
     "watch": "^1.0.2"
-  },
-  "_moduleAliases": {
-    "@src": ".",
-    "@app": "../../../app",
-    "@classes": "../../../build/js"
-  },
-  "_moduleDirectories": [
-    "../../../app/node_modules"
-  ]
+  }
 }

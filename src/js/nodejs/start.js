@@ -1,5 +1,12 @@
-// enable the module alias module
-require("module-alias/register");
+// load the module alias module
+const moduleAlias = require("module-alias");
+
+// add module aliases
+moduleAlias.addAlias("@src", `${process.cwd()}/src/js/nodejs`);
+moduleAlias.addAlias("@app", `${process.cwd()}/app`);
+moduleAlias.addAlias("@classes", `${process.cwd()}/build/js`);
+// add a node_modules directory
+moduleAlias.addPath(`${process.cwd()}/app/node_modules`);
 
 // load the moka class
 const Moka = require("@src/classes/Moka.js")
