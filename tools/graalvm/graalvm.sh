@@ -32,7 +32,7 @@ then
   echo -en $YELLOW
   echo -n "In order to speedup start time, Docker image baristi/graalvm is not updated automatically. " > /dev/stderr
   echo "Execute 'docker pull baristi/graalvm', if you want to check and update it yourself." > /dev/stderr
-  echo -e $NC
+  echo -en $NC
 fi
 
 # run the Docker Image, forwarding the given command
@@ -46,5 +46,4 @@ then
 fi
 
 # end
-echo ""
 exit 0
