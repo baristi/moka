@@ -2,7 +2,7 @@
 FROM ubuntu as build
 
 # define the GraalVM version to download
-ENV GRAALVM_VERSION=1.0.0-rc4
+ENV GRAALVM_VERSION=1.0.0-rc5
 
 # update the pckages database and install wget
 RUN apt-get update && \
