@@ -1,14 +1,14 @@
 {
-  "name": "moka",
-  "version": "0.1.0",
+  "name": "moka-server",
+  "version": "0.1.1",
   "description": "A web application framework, aiming at high-productivity through simplicity.",
   "main": "moka.js",
   "scripts": {
-    "start": "bin/moka"
+    "start": "start.js"
   },
   "preferGlobal": "true",
   "bin": {
-    "moka": "bin/moka"
+    "moka": "start.js"
   },
   "repository": {
     "type": "git",
