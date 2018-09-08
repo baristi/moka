@@ -1,12 +1,20 @@
+#!/usr/bin/env node
+
 // load the module alias module
 const moduleAlias = require("module-alias");
+// load the path module
+const path = require("path");
+
+// get the base directory (used as base directory for the app and build directory only)
+// the base directory will either be the current working directory or the first argument, if present
+const baseDirectory = process.argv.length == 3 ? path.resolve(process.argv[2]) : process.cwd();
 
 // add module aliases
-moduleAlias.addAlias("@src", `${process.cwd()}/src/js/nodejs`);
-moduleAlias.addAlias("@app", `${process.cwd()}/app`);
-moduleAlias.addAlias("@classes", `${process.cwd()}/build/js`);
+moduleAlias.addAlias("@src", __dirname);
+moduleAlias.addAlias("@app", `${baseDirectory}/app`);
+moduleAlias.addAlias("@classes", `${baseDirectory}/build/js`);
 // add a node_modules directory
-moduleAlias.addPath(`${process.cwd()}/app/node_modules`);
+moduleAlias.addPath(`${baseDirectory}/app/node_modules`);
 
 // load the moka class
 const Moka = require("@src/classes/Moka.js")

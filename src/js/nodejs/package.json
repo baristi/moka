@@ -3,11 +3,24 @@
   "version": "0.1.0",
   "description": "A web application framework, aiming at high-productivity through simplicity.",
   "main": "moka.js",
+  "scripts": {
+    "start": "bin/moka"
+  },
+  "preferGlobal": "true",
+  "bin": {
+    "moka": "bin/moka"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/baristi/moka.git"
   },
   "author": "Arbeitsgemeinschaft Baristi",
+  "contributors": [
+    {
+      "name": "Daniel Ruthardt",
+      "email": "daniel@olfrygt.dk"
+    }
+  ],
   "license": "LGPL-3.0",
   "bugs": {
     "url": "https://github.com/baristi/moka/issues"
