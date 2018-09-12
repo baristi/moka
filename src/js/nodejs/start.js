@@ -11,10 +11,10 @@ const baseDirectory = process.argv.length == 3 ? path.resolve(process.argv[2]) :
 
 // add module aliases
 moduleAlias.addAlias("@src", __dirname);
-moduleAlias.addAlias("@app", `${baseDirectory}/app`);
+moduleAlias.addAlias("@app", `${baseDirectory}`);
 moduleAlias.addAlias("@classes", `${baseDirectory}/build/js`);
 // add a node_modules directory
-moduleAlias.addPath(`${baseDirectory}/app/node_modules`);
+moduleAlias.addPath(`${baseDirectory}/node_modules`);
 
 // load the moka class
 const Moka = require("@src/classes/Moka.js")
